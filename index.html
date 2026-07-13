@@ -457,6 +457,15 @@ select option { background: var(--select-bg); color: var(--text); }
   border: 2px solid var(--border); flex-shrink: 0;
 }
 
+/* SPINNER */
+.spinner {
+  width: 18px; height: 18px; border-radius: 50%;
+  border: 2px solid var(--border);
+  border-top-color: var(--blue);
+  animation: spin .7s linear infinite; flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
 /* smooth theme transition */
 *, *::before, *::after { transition: background-color .2s, border-color .2s, color .15s; }
 .qtype-btn {
@@ -487,6 +496,9 @@ select option { background: var(--select-bg); color: var(--text); }
       <div class="nav-item active" onclick="showView('dashboard')">
         <span class="nav-icon">📊</span> Dashboard
       </div>
+      <div class="nav-item" onclick="showView('setup')">
+        <span class="nav-icon">🚀</span> Setup Guide
+      </div>
       <div class="nav-item" onclick="showView('topics')">
         <span class="nav-icon">🗂️</span> Topics Database
       </div>
@@ -504,6 +516,9 @@ select option { background: var(--select-bg); color: var(--text); }
       </div>
       <div class="nav-item" onclick="showView('mastered')">
         <span class="nav-icon">✅</span> Mastered
+      </div>
+      <div class="nav-item" onclick="showView('generator')">
+        <span class="nav-icon">🤖</span> Question Generator
       </div>
     </div>
 
@@ -597,7 +612,7 @@ select option { background: var(--select-bg); color: var(--text); }
       </div>
       <div class="form-group">
         <label class="form-label">Practice Score (%)</label>
-        <input class="form-input" id="f-mcq" type="number" min="0" max="100" value="50" placeholder="0–100">
+        <input class="form-input" id="f-mcq" type="number" min="0" max="100" placeholder="Leave blank if not practiced yet">
       </div>
       <div class="form-group">
         <label class="form-label">Importance (1–5)</label>
@@ -737,41 +752,9 @@ select option { background: var(--select-bg); color: var(--text); }
 <script>
 // ─── DATA ────────────────────────────────────────────────────────────────────
 let topics = JSON.parse(localStorage.getItem('medExamTopics') || 'null') || [
-  { id:1,  topic:'Heart Failure',         subject:'Medicine',          subtopic:'Systolic HF',      confidence:2, mcq:45, importance:5, lastReviewed:'2025-06-09', status:'Needs Attention', notes:'BNP, JVP, S3 gallop' },
-  { id:2,  topic:'Hypertension',          subject:'Medicine',          subtopic:'Essential HTN',    confidence:4, mcq:78, importance:4, lastReviewed:'2025-06-26', status:'In Progress',    notes:'JNC8 targets' },
-  { id:3,  topic:'Acute Kidney Injury',   subject:'Medicine',          subtopic:'Prerenal AKI',     confidence:1, mcq:30, importance:5, lastReviewed:'2025-06-07', status:'Needs Attention', notes:'AKIN staging, FeNa' },
-  { id:4,  topic:'Diabetes Mellitus',     subject:'Medicine',          subtopic:'Type 2 DM',        confidence:3, mcq:65, importance:4, lastReviewed:'2025-06-22', status:'In Progress',    notes:'HbA1c targets' },
-  { id:5,  topic:'COPD',                  subject:'Medicine',          subtopic:'Management',       confidence:2, mcq:50, importance:4, lastReviewed:'2025-06-15', status:'Needs Attention', notes:'GOLD staging' },
-  { id:6,  topic:'Bronchial Asthma',      subject:'Medicine',          subtopic:'Management',       confidence:4, mcq:80, importance:3, lastReviewed:'2025-06-24', status:'Mastered',       notes:'Step therapy, peak flow' },
-  { id:7,  topic:'Malaria',               subject:'Medicine',          subtopic:'Severe Malaria',   confidence:3, mcq:60, importance:5, lastReviewed:'2025-06-20', status:'In Progress',    notes:'Artesunate IV, CM criteria' },
-  { id:8,  topic:'Sickle Cell Disease',   subject:'Medicine',          subtopic:'Vaso-occlusive',   confidence:2, mcq:55, importance:4, lastReviewed:'2025-06-18', status:'Needs Attention', notes:'HbSS, hydroxyurea' },
-  { id:9,  topic:'Stroke',                subject:'Medicine',          subtopic:'Ischaemic',        confidence:3, mcq:58, importance:4, lastReviewed:'2025-06-21', status:'In Progress',    notes:'tPA window, NIHSS' },
-  { id:10, topic:'Sepsis',                subject:'Medicine',          subtopic:'Septic Shock',     confidence:2, mcq:42, importance:5, lastReviewed:'2025-06-16', status:'Needs Attention', notes:'Sepsis-3, qSOFA, Sepsis 6' },
-  { id:11, topic:'Acute Abdomen',         subject:'Surgery',           subtopic:'Peritonitis',      confidence:2, mcq:40, importance:5, lastReviewed:'2025-06-11', status:'Needs Attention', notes:'Rigidity, guarding, rebound' },
-  { id:12, topic:'Hernia',                subject:'Surgery',           subtopic:'Inguinal Hernia',  confidence:3, mcq:70, importance:3, lastReviewed:'2025-06-23', status:'In Progress',    notes:'Hesselbach triangle, Lichtenstein' },
-  { id:13, topic:'Breast Lump',           subject:'Surgery',           subtopic:'Diagnosis',        confidence:2, mcq:55, importance:3, lastReviewed:'2025-06-18', status:'In Progress',    notes:'Triple assessment' },
-  { id:14, topic:'Thyroid Swelling',      subject:'Surgery',           subtopic:'Goitre',           confidence:2, mcq:48, importance:4, lastReviewed:'2025-06-14', status:'Needs Attention', notes:'Pemberton sign, moves on swallow' },
-  { id:15, topic:'Intestinal Obstruction',subject:'Surgery',           subtopic:'Small Bowel',      confidence:1, mcq:35, importance:5, lastReviewed:'2025-06-10', status:'Needs Attention', notes:'Air-fluid levels, vomiting pattern' },
-  { id:16, topic:'Appendicitis',          subject:'Surgery',           subtopic:'Acute',            confidence:4, mcq:82, importance:4, lastReviewed:'2025-06-25', status:'Mastered',       notes:'Alvarado score, McBurney' },
-  { id:17, topic:'Burns',                 subject:'Surgery',           subtopic:'Management',       confidence:2, mcq:50, importance:4, lastReviewed:'2025-06-17', status:'Needs Attention', notes:'Parkland formula, rule of 9s' },
-  { id:18, topic:'Shock',                 subject:'Surgery',           subtopic:'Hypovolaemic',     confidence:3, mcq:65, importance:5, lastReviewed:'2025-06-22', status:'In Progress',    notes:'4 classes, 3:1 rule' },
-  { id:19, topic:'Neonatal Jaundice',     subject:'Paediatrics',       subtopic:'Physiological',    confidence:1, mcq:35, importance:5, lastReviewed:'2025-06-09', status:'Needs Attention', notes:'Phototherapy, exchange transfusion' },
-  { id:20, topic:'Pneumonia (Paeds)',     subject:'Paediatrics',       subtopic:'Lobar Pneumonia',  confidence:2, mcq:50, importance:4, lastReviewed:'2025-06-14', status:'Needs Attention', notes:'WHO classification, amoxicillin' },
-  { id:21, topic:'Malnutrition',          subject:'Paediatrics',       subtopic:'PEM / SAM',        confidence:2, mcq:45, importance:5, lastReviewed:'2025-06-12', status:'Needs Attention', notes:'F-75, F-100, RUTF' },
-  { id:22, topic:'Febrile Convulsions',   subject:'Paediatrics',       subtopic:'Simple vs Complex',confidence:3, mcq:68, importance:3, lastReviewed:'2025-06-22', status:'In Progress',    notes:'Diazepam PR, recurrence risk' },
-  { id:23, topic:'Meningitis (Paeds)',    subject:'Paediatrics',       subtopic:'Bacterial',        confidence:2, mcq:52, importance:5, lastReviewed:'2025-06-16', status:'Needs Attention', notes:'LP findings, ceftriaxone' },
-  { id:24, topic:'Pre-eclampsia',         subject:'O&G',               subtopic:'Severe Features',  confidence:2, mcq:45, importance:5, lastReviewed:'2025-06-12', status:'Needs Attention', notes:'MgSO4, antihypertensives, delivery' },
-  { id:25, topic:'PPH',                   subject:'O&G',               subtopic:'Primary PPH',      confidence:2, mcq:48, importance:5, lastReviewed:'2025-06-13', status:'Needs Attention', notes:'4Ts, Syntocinon, B-Lynch' },
-  { id:26, topic:'Ectopic Pregnancy',     subject:'O&G',               subtopic:'Tubal',            confidence:3, mcq:65, importance:5, lastReviewed:'2025-06-20', status:'In Progress',    notes:'Salpingectomy vs salpingostomy' },
-  { id:27, topic:'Obstructed Labour',     subject:'O&G',               subtopic:'Management',       confidence:2, mcq:50, importance:5, lastReviewed:'2025-06-15', status:'Needs Attention', notes:'Partograph, CS indications' },
-  { id:28, topic:'GDM',                   subject:'O&G',               subtopic:'Diagnosis & Mx',   confidence:3, mcq:60, importance:3, lastReviewed:'2025-06-21', status:'In Progress',    notes:'OGTT, insulin targets' },
-  { id:29, topic:'Schizophrenia',         subject:'Psychiatry',        subtopic:'ICD-11',           confidence:2, mcq:50, importance:4, lastReviewed:'2025-06-16', status:'Needs Attention', notes:'First-rank symptoms, antipsychotics' },
-  { id:30, topic:'Depression',            subject:'Psychiatry',        subtopic:'Major Depressive', confidence:4, mcq:75, importance:3, lastReviewed:'2025-06-24', status:'In Progress',    notes:'PHQ-9, SSRIs' },
-  { id:31, topic:'Bipolar Disorder',      subject:'Psychiatry',        subtopic:'Type I & II',      confidence:2, mcq:48, importance:3, lastReviewed:'2025-06-17', status:'Needs Attention', notes:'Lithium, mood stabilisers' },
-  { id:32, topic:'Suicide Risk',          subject:'Psychiatry',        subtopic:'Assessment',       confidence:3, mcq:62, importance:4, lastReviewed:'2025-06-22', status:'In Progress',    notes:'Columbia scale, protective factors' },
-  { id:33, topic:'Epidemiology Basics',   subject:'Community Medicine',subtopic:'Study designs',    confidence:3, mcq:65, importance:4, lastReviewed:'2025-06-21', status:'In Progress',    notes:'RR, OR, NNT, sensitivity' },
-  { id:34, topic:'Immunisation',          subject:'Community Medicine',subtopic:'NPI Schedule',     confidence:4, mcq:78, importance:4, lastReviewed:'2025-06-24', status:'Mastered',       notes:'Nigerian schedule, cold chain' },
-  { id:35, topic:'Maternal & Child Health',subject:'Community Medicine',subtopic:'MCH Indicators',  confidence:2, mcq:55, importance:3, lastReviewed:'2025-06-18', status:'In Progress',    notes:'MMR, IMR, NMR definitions' },
+  { id:1, topic:'Heart Failure', subject:'Medicine', subtopic:'Systolic HF', confidence:2, mcq:65, importance:5, lastReviewed: new Date().toISOString().split('T')[0], status:'In Progress', notes:'BNP elevated, JVP raised, S3 gallop. Know Framingham criteria.', sessions:[{date: new Date().toISOString().split('T')[0], type:'MCQ', attempted:20, correct:13, pct:65}], totalMcqs:20, correctMcqs:13 },
+  { id:2, topic:'Pre-eclampsia', subject:'O&G', subtopic:'Severe Features', confidence:1, mcq:null, importance:5, lastReviewed: new Date(Date.now()-8*86400000).toISOString().split('T')[0], status:'Needs Attention', notes:'', sessions:[], totalMcqs:0, correctMcqs:0 },
+  { id:3, topic:'Neonatal Jaundice', subject:'Paediatrics', subtopic:'Physiological vs Pathological', confidence:3, mcq:null, importance:4, lastReviewed: new Date(Date.now()-2*86400000).toISOString().split('T')[0], status:'In Progress', notes:'Phototherapy threshold, exchange transfusion criteria.', sessions:[], totalMcqs:0, correctMcqs:0 },
 ];
 
 let nextId = Math.max(...topics.map(t => t.id)) + 1;
@@ -797,7 +780,8 @@ function daysScore(days) {
 
 function priorityScore(t) {
   const ds = daysScore(daysSince(t.lastReviewed));
-  return (6 - t.confidence) + (6 - Math.round(t.mcq / 20)) + ds + t.importance;
+  const mcqComponent = (t.mcq === null || t.mcq === undefined) ? 5 : (6 - Math.round(t.mcq / 20));
+  return (6 - t.confidence) + mcqComponent + ds + t.importance;
 }
 
 function priorityLevel(score) {
@@ -872,6 +856,8 @@ function showView(view, subjectFilter) {
     spaced: '🔁 Spaced Repetition',
     mastered: '✅ Mastered',
     mcqlog: '📝 Practice Tracker',
+    setup: '🚀 Setup Guide',
+    generator: '🤖 Question Generator',
     subject: `📚 ${subjectFilter}`
   };
   document.getElementById('page-title').textContent = titles[view] || titles.subject;
@@ -882,6 +868,10 @@ function showView(view, subjectFilter) {
     renderDashboard(content);
   } else if (view === 'mcqlog') {
     renderMcqTracker(content);
+  } else if (view === 'setup') {
+    renderSetupGuide(content);
+  } else if (view === 'generator') {
+    renderQuestionGenerator(content);
   } else {
     let filtered = [...topics];
     if (view === 'today')    filtered = filtered.filter(t => { const s = priorityScore(t); return priorityLevel(s) === 'VERY HIGH' || priorityLevel(s) === 'HIGH'; }).filter(t => t.status !== 'Mastered');
@@ -898,7 +888,127 @@ function filterBySubject(subject) {
   showView('subject', subject);
 }
 
-// ─── PRACTICE TRACKER VIEW ───────────────────────────────────────────────────
+// ─── SETUP GUIDE ─────────────────────────────────────────────────────────────
+function renderSetupGuide(container) {
+  container.innerHTML = `
+    <div style="max-width:680px">
+
+      <div style="background:var(--blue-dim);border:1px solid var(--blue)33;border-radius:12px;padding:20px 24px;margin-bottom:28px;display:flex;gap:14px;align-items:flex-start">
+        <span style="font-size:24px">👋</span>
+        <div>
+          <div style="font-weight:700;font-size:15px;margin-bottom:5px">Welcome to Medical Exam OS</div>
+          <div style="font-size:13.5px;color:var(--text-light);line-height:1.7">
+            This system tells you <b>exactly what to study and when</b>, based on how well you know each topic. It works for MCQs, SAQs, Picture Tests, and OSCEs — all the formats you'll face in finals.<br><br>
+            Follow these 5 steps to get set up. Takes about 20 minutes.
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 1 -->
+      <div style="display:flex;gap:16px;margin-bottom:24px;align-items:flex-start">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--blue);color:var(--btn-primary-text);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0">1</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:15px;margin-bottom:6px">Set your exam date</div>
+          <div style="font-size:13.5px;color:var(--text-light);line-height:1.7;margin-bottom:10px">
+            Find the countdown timer at the bottom of the left sidebar. Enter your actual exam date. This gives you a real countdown and helps you understand how much time you have to cover your syllabus.
+          </div>
+          <div style="background:var(--surface2);border-radius:8px;padding:12px 14px;font-size:12.5px;color:var(--text-faint);border:1px solid var(--border)">
+            💡 If you have multiple exam dates (e.g. Medicine first, then Surgery), enter the earliest one.
+          </div>
+        </div>
+      </div>
+
+      <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
+
+      <!-- STEP 2 -->
+      <div style="display:flex;gap:16px;margin-bottom:24px;align-items:flex-start">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--blue);color:var(--btn-primary-text);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0">2</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:15px;margin-bottom:6px">Delete the sample topics</div>
+          <div style="font-size:13.5px;color:var(--text-light);line-height:1.7;margin-bottom:10px">
+            Go to <b>Topics Database</b> in the sidebar. You'll see 3 sample topics — Heart Failure, Pre-eclampsia, and Neonatal Jaundice. These show you what a filled entry looks like. Once you understand the format, delete them and start fresh.
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="showView('topics')" style="font-size:12px">→ Go to Topics Database</button>
+        </div>
+      </div>
+
+      <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
+
+      <!-- STEP 3 -->
+      <div style="display:flex;gap:16px;margin-bottom:24px;align-items:flex-start">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--blue);color:var(--btn-primary-text);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0">3</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:15px;margin-bottom:6px">Add your topics — one subject at a time</div>
+          <div style="font-size:13.5px;color:var(--text-light);line-height:1.7;margin-bottom:12px">
+            Click <b>+ Add Topic</b> and fill in each topic from your school's syllabus. Don't rush this — being honest about your confidence rating is what makes the priority score accurate. For each topic ask yourself:
+          </div>
+          <div style="background:var(--surface2);border-radius:10px;padding:16px;border:1px solid var(--border)">
+            <div style="font-size:12.5px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">Confidence guide</div>
+            ${[['1','I don\'t know this topic at all'],['2','I know a little but would struggle in an exam'],['3','I have basic understanding but gaps remain'],['4','I know this well and can answer most questions'],['5','I can teach this — zero gaps']].map(([n,d]) => `
+            <div style="display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)">
+              <span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--blue);width:16px;flex-shrink:0">${n}</span>
+              <span style="font-size:13px;color:var(--text-light)">${d}</span>
+            </div>`).join('')}
+            <div style="margin-top:12px">
+              <div style="font-size:12.5px;font-weight:600;color:var(--text-faint);text-transform:uppercase;letter-spacing:.04em;margin-bottom:10px">Importance guide</div>
+              ${[['5','Must know — always comes up in exams'],['4','High yield — frequently tested'],['3','Moderate — appears occasionally'],['2','Low yield — rarely tested'],['1','Unlikely to appear']].map(([n,d]) => `
+              <div style="display:flex;align-items:flex-start;gap:10px;padding:6px 0;border-bottom:1px solid var(--border)">
+                <span style="font-family:'JetBrains Mono',monospace;font-weight:700;color:var(--green);width:16px;flex-shrink:0">${n}</span>
+                <span style="font-size:13px;color:var(--text-light)">${d}</span>
+              </div>`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
+
+      <!-- STEP 4 -->
+      <div style="display:flex;gap:16px;margin-bottom:24px;align-items:flex-start">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--blue);color:var(--btn-primary-text);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0">4</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:15px;margin-bottom:6px">Use Today's Plan every day</div>
+          <div style="font-size:13.5px;color:var(--text-light);line-height:1.7;margin-bottom:10px">
+            Once your topics are in, <b>Today's Plan</b> automatically shows you the highest priority topics to study — sorted by Priority Score. You don't need to decide what to study. The system decides for you based on how weak you are on each topic and how long since you last reviewed it.
+          </div>
+          <div style="background:var(--surface2);border-radius:8px;padding:12px 14px;font-size:12.5px;color:var(--text-faint);border:1px solid var(--border)">
+            🔴 <b>VERY HIGH (16–20)</b> — Study today, no excuses<br>
+            🟠 <b>HIGH (11–15)</b> — Study this week<br>
+            🟡 <b>MEDIUM (6–10)</b> — Schedule for this month<br>
+            🟢 <b>LOW (0–5)</b> — Maintain, don't neglect
+          </div>
+        </div>
+      </div>
+
+      <div style="height:1px;background:var(--border);margin-bottom:24px"></div>
+
+      <!-- STEP 5 -->
+      <div style="display:flex;gap:16px;margin-bottom:28px;align-items:flex-start">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--blue);color:var(--btn-primary-text);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;flex-shrink:0">5</div>
+        <div style="flex:1">
+          <div style="font-weight:600;font-size:15px;margin-bottom:6px">Log every practice session</div>
+          <div style="font-size:13.5px;color:var(--text-light);line-height:1.7;margin-bottom:10px">
+            After answering past questions on any topic, go to Topics Database, hover that topic, and click the 📝 button. Select the question type (MCQ, SAQ, Picture Test, or OSCE), enter how many you attempted and how many you got right. The app calculates your score and updates the Priority Score automatically.<br><br>
+            The more honestly you log, the more accurate the system becomes.
+          </div>
+          <div style="background:var(--surface2);border-radius:8px;padding:12px 14px;font-size:12.5px;color:var(--text-faint);border:1px solid var(--border)">
+            💾 <b>Back up your data regularly</b> — click <b>⬇️ Export</b> in the top bar to download a backup file. Import it on any device to continue where you left off.
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--green-dim);border:1px solid var(--green)33;border-radius:12px;padding:20px 24px;text-align:center">
+        <div style="font-size:20px;margin-bottom:8px">🎯</div>
+        <div style="font-weight:700;font-size:15px;margin-bottom:6px">You're ready to go</div>
+        <div style="font-size:13px;color:var(--text-light);margin-bottom:16px">Start by adding your first subject's topics. The system does the rest.</div>
+        <button class="btn btn-primary" onclick="openModal()">+ Add Your First Topic</button>
+      </div>
+
+    </div>
+  `;
+}
+
+
 function renderMcqTracker(container) {
   const withSessions = topics.filter(t => t.sessions && t.sessions.length > 0);
   const allSessions = topics.flatMap(t => (t.sessions||[]).map(s => ({...s, topic: t.topic, subject: t.subject})));
@@ -989,7 +1099,7 @@ function renderDashboard(container) {
   const total = topics.length;
   const mastered = topics.filter(t => t.status === 'Mastered').length;
   const needsAttn = topics.filter(t => priorityScore(t) >= 16).length;
-  const avgMcq = Math.round(topics.reduce((s,t) => s+t.mcq, 0) / total);
+  const avgMcq = (() => { const practiced = topics.filter(t => t.mcq !== null && t.mcq !== undefined); return practiced.length ? Math.round(practiced.reduce((s,t) => s+t.mcq, 0) / practiced.length) : null; })();
   const masteredPct = Math.round(mastered/total*100);
 
   const subjects = ['Medicine','Surgery','Paediatrics','O&G','Psychiatry','Community Medicine'];
@@ -997,7 +1107,8 @@ function renderDashboard(container) {
     const st = topics.filter(t => t.subject === s);
     if (!st.length) return { s, pct: 0, count: st.length };
     const avgConf = st.reduce((a,t) => a+t.confidence,0)/st.length;
-    const avgMcqS = st.reduce((a,t) => a+t.mcq,0)/st.length;
+    const practicedInSubject = st.filter(t => t.mcq !== null && t.mcq !== undefined);
+    const avgMcqS = practicedInSubject.length ? practicedInSubject.reduce((a,t) => a+t.mcq,0)/practicedInSubject.length : 0;
     const pct = Math.round((avgConf/5*0.5 + avgMcqS/100*0.5)*100);
     return { s, pct, count: st.length };
   });
@@ -1029,8 +1140,8 @@ function renderDashboard(container) {
       </div>
       <div class="stat-card">
         <div class="s-label">Avg MCQ Score</div>
-        <div class="s-value">${avgMcq}%</div>
-        <div class="s-sub">Across all topics</div>
+        <div class="s-value">${avgMcq !== null ? avgMcq + '%' : '—'}</div>
+        <div class="s-sub">${avgMcq !== null ? 'Across practiced topics' : 'No sessions logged yet'}</div>
         <div class="bar"><div class="bar-fill" style="width:${avgMcq}%;background:var(--blue)"></div></div>
       </div>
     </div>
@@ -1155,7 +1266,7 @@ function renderTableBody(data) {
           </td>
           <td>${subjectTag(t.subject)}</td>
           <td>${confStars(t.confidence)}</td>
-          <td style="font-family:'JetBrains Mono',monospace">${t.mcq}%</td>
+          <td style="font-family:'JetBrains Mono',monospace">${t.mcq !== null && t.mcq !== undefined ? t.mcq + '%' : '<span style="color:var(--text-faint)">—</span>'}</td>
           <td style="font-family:'JetBrains Mono',monospace;color:${ds>14?'var(--red)':ds>7?'var(--orange)':'var(--text-light)'}">${ds}d</td>
           <td><span class="score-badge" style="color:${scoreColor(sc)}">${sc}</span></td>
           <td>${priorityTag(sc)}</td>
@@ -1163,7 +1274,8 @@ function renderTableBody(data) {
           <td style="font-size:12px;color:var(--text-light)">${nextReviewDate(t)}</td>
           <td>
             <div class="row-actions">
-              <button class="row-btn" onclick="openMcqModal(${t.id})" title="Log MCQ Session">📝</button>
+              <button class="row-btn" onclick="openMcqModal(${t.id})" title="Log Practice Session">📝</button>
+              <button class="row-btn" onclick="quickGenerate(${t.id})" title="Generate Questions">🤖</button>
               <button class="row-btn" onclick="editTopic(${t.id})" title="Edit">✏️</button>
               <button class="row-btn del" onclick="deleteTopic(${t.id})" title="Delete">🗑️</button>
             </div>
@@ -1210,7 +1322,7 @@ function openModal(id) {
     document.getElementById('f-subject').value = t.subject;
     document.getElementById('f-subtopic').value = t.subtopic || '';
     document.getElementById('f-confidence').value = t.confidence;
-    document.getElementById('f-mcq').value = t.mcq;
+    document.getElementById('f-mcq').value = (t.mcq !== null && t.mcq !== undefined) ? t.mcq : '';
     document.getElementById('f-importance').value = t.importance;
     document.getElementById('f-reviewed').value = t.lastReviewed || '';
     document.getElementById('f-status').value = t.status;
@@ -1245,7 +1357,7 @@ function saveTopic() {
     subject,
     subtopic: document.getElementById('f-subtopic').value.trim(),
     confidence: parseInt(document.getElementById('f-confidence').value),
-    mcq: parseInt(document.getElementById('f-mcq').value) || 50,
+    mcq: document.getElementById('f-mcq').value !== '' ? parseInt(document.getElementById('f-mcq').value) : null,
     importance: parseInt(document.getElementById('f-importance').value),
     lastReviewed: document.getElementById('f-reviewed').value,
     status: document.getElementById('f-status').value,
@@ -1286,6 +1398,8 @@ function openMcqModal(id) {
   document.getElementById('mcq-topic-subject').textContent = t.subject + (t.subtopic ? ' · ' + t.subtopic : '');
   document.getElementById('mcq-attempted').value = '';
   document.getElementById('mcq-correct').value = '';
+  document.getElementById('mcq-attempted').placeholder = 'e.g. 20';
+  document.getElementById('mcq-correct').placeholder = 'e.g. 14';
   document.getElementById('mcq-preview-score').textContent = '—';
   document.getElementById('mcq-bar-fill').style.width = '0%';
   document.getElementById('mcq-confidence').value = t.confidence;
@@ -1337,7 +1451,7 @@ function saveMcqSession() {
   const attempted = parseInt(document.getElementById('mcq-attempted').value);
   const correct = parseInt(document.getElementById('mcq-correct').value);
   if (!attempted || isNaN(correct) || correct > attempted || attempted < 1) {
-    showToast('⚠️ Enter valid questions attempted and correct'); return;
+    showToast('⚠️ Enter how many questions you attempted and how many you got correct'); return;
   }
   const pct = Math.round((correct / attempted) * 100);
   const qtype = document.getElementById('mcq-qtype').value;
@@ -1480,6 +1594,288 @@ function closeDataModal() {
 document.getElementById('data-modal-overlay').addEventListener('click', function(e) {
   if (e.target === this) closeDataModal();
 });
+
+// ─── QUESTION GENERATOR ──────────────────────────────────────────────────────
+function quickGenerate(id) {
+  const t = topics.find(x => x.id === id);
+  showView('generator');
+  setTimeout(() => {
+    document.getElementById('gen-topic').value = t.topic;
+    document.getElementById('gen-subject').value = t.subject;
+    document.getElementById('gen-level').value = 'MBBS Finals';
+    document.getElementById('gen-subtopic').value = t.subtopic || '';
+  }, 50);
+}
+
+function renderQuestionGenerator(container) {
+  container.innerHTML = `
+    <div style="max-width:720px">
+
+      <div style="background:var(--blue-dim);border:1px solid var(--blue)33;border-radius:12px;padding:18px 22px;margin-bottom:24px;display:flex;gap:12px;align-items:flex-start">
+        <span style="font-size:22px">🤖</span>
+        <div>
+          <div style="font-weight:700;font-size:15px;margin-bottom:4px">AI Question Generator</div>
+          <div style="font-size:13px;color:var(--text-light);line-height:1.6">Generate exam-style practice questions for any topic instantly. Type a topic name or upload your lecture notes/slides for questions based on your actual study material.</div>
+        </div>
+      </div>
+
+      <!-- INPUT PANEL -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:20px">
+        <div style="font-weight:600;font-size:14px;margin-bottom:16px">📋 Question Settings</div>
+
+        <div class="form-grid">
+          <div class="form-group full">
+            <label class="form-label">Topic *</label>
+            <input class="form-input" id="gen-topic" placeholder="e.g. Heart Failure, Pre-eclampsia, Sepsis">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subject</label>
+            <select class="form-select" id="gen-subject">
+              <option value="">Select subject</option>
+              <option>Medicine</option>
+              <option>Surgery</option>
+              <option>Paediatrics</option>
+              <option>O&G</option>
+              <option>Psychiatry</option>
+              <option>Community Medicine</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Subtopic / Focus Area</label>
+            <input class="form-input" id="gen-subtopic" placeholder="e.g. Management, Diagnosis, Complications">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Exam Level</label>
+            <select class="form-select" id="gen-level">
+              <option value="MBBS Finals">MBBS Finals</option>
+              <option value="Clinical Years (300-400L)">Clinical Years (300–400L)</option>
+              <option value="Pre-clinical (100-200L)">Pre-clinical (100–200L)</option>
+              <option value="Postgraduate / Residency">Postgraduate / Residency</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Question Type</label>
+            <select class="form-select" id="gen-type">
+              <option value="MCQ">MCQ (Multiple Choice)</option>
+              <option value="SAQ">SAQ (Short Answer)</option>
+              <option value="Clinical Vignette MCQ">Clinical Vignette MCQ</option>
+              <option value="Essay">Essay / Long Answer</option>
+              <option value="Oral Viva">Oral Viva Style</option>
+              <option value="Picture Test">Picture Test Description</option>
+              <option value="Mixed">Mixed (all types)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Number of Questions</label>
+            <select class="form-select" id="gen-count">
+              <option value="5">5 questions</option>
+              <option value="10" selected>10 questions</option>
+              <option value="15">15 questions</option>
+              <option value="20">20 questions</option>
+            </select>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Upload Study Material (optional)</label>
+            <div style="border:2px dashed var(--border);border-radius:8px;padding:18px;text-align:center;cursor:pointer;transition:border-color .2s" id="upload-zone" onclick="document.getElementById('gen-file').click()" ondragover="event.preventDefault();this.style.borderColor='var(--blue)'" ondragleave="this.style.borderColor='var(--border)'" ondrop="handleFileDrop(event)">
+              <div style="font-size:22px;margin-bottom:6px">📄</div>
+              <div style="font-size:13px;color:var(--text-light)">Drop your PDF or paste notes below</div>
+              <div style="font-size:11.5px;color:var(--text-faint);margin-top:4px">PDF only · Max 32MB · Best results with 5–20 pages</div>
+              <div style="font-size:11px;color:var(--text-faint);margin-top:3px">Have PowerPoint slides? Save as PDF first (File → Save As → PDF)</div>
+              <input type="file" id="gen-file" accept=".pdf" style="display:none" onchange="handleFileSelect(event)">
+            </div>
+            <div id="file-name-display" style="display:none;margin-top:8px;font-size:12.5px;color:var(--green);display:flex;align-items:center;gap:6px"></div>
+          </div>
+          <div class="form-group full">
+            <label class="form-label">Or paste your notes / key points here</label>
+            <textarea class="form-input" id="gen-notes" rows="4" placeholder="Paste your lecture notes, key points, or study material here and questions will be generated from this content…" style="resize:vertical;min-height:100px"></textarea>
+          </div>
+        </div>
+
+        <div style="margin-top:18px;display:flex;gap:10px;align-items:center">
+          <button class="btn btn-primary" onclick="generateQuestions()" id="gen-btn" style="padding:10px 24px;font-size:14px">
+            🤖 Generate Questions
+          </button>
+          <button class="btn btn-ghost" onclick="clearGenerator()">Clear</button>
+          <span id="gen-status" style="font-size:12.5px;color:var(--text-faint)"></span>
+        </div>
+      </div>
+
+      <!-- OUTPUT PANEL -->
+      <div id="gen-output" style="display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:22px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div style="font-weight:600;font-size:14px">Generated Questions</div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost btn-sm" onclick="copyQuestions()">📋 Copy All</button>
+            <button class="btn btn-ghost btn-sm" onclick="generateQuestions()">🔄 Regenerate</button>
+          </div>
+        </div>
+        <div id="gen-questions-content" style="line-height:1.8;font-size:13.5px;color:var(--text)"></div>
+      </div>
+
+    </div>
+  `;
+}
+
+// ─── FILE HANDLING ────────────────────────────────────────────────────────────
+let uploadedFileBase64 = null;
+let uploadedFileName = null;
+
+function handleFileDrop(event) {
+  event.preventDefault();
+  document.getElementById('upload-zone').style.borderColor = 'var(--border)';
+  const file = event.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') processFile(file);
+  else showToast('⚠️ Please upload a PDF file only. Convert your slides to PDF first.');
+}
+
+function handleFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (file.type !== 'application/pdf') {
+    showToast('⚠️ Only PDF files are supported. Please convert your file to PDF first.');
+    event.target.value = '';
+    return;
+  }
+  processFile(file);
+}
+
+function processFile(file) {
+  // Size warning
+  const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+  if (file.size > 32 * 1024 * 1024) {
+    showToast('⚠️ File is over 32MB — please use a smaller file'); return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    showToast(`⚠️ Large file (${sizeMB}MB) — processing may be slow. Consider using just the relevant pages.`);
+  }
+  uploadedFileName = file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    uploadedFileBase64 = e.target.result.split(',')[1];
+    const display = document.getElementById('file-name-display');
+    display.style.display = 'flex';
+    display.innerHTML = `✅ <span>${file.name}</span> <span style="color:var(--text-faint);margin-left:4px">(${sizeMB}MB)</span> <span style="color:var(--text-faint);cursor:pointer;margin-left:4px" onclick="clearFile()">✕ Remove</span>`;
+    showToast(`✅ ${file.name} uploaded`);
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearFile() {
+  uploadedFileBase64 = null;
+  uploadedFileName = null;
+  document.getElementById('gen-file').value = '';
+  const display = document.getElementById('file-name-display');
+  if (display) { display.style.display = 'none'; display.innerHTML = ''; }
+}
+
+// ─── GENERATE QUESTIONS ───────────────────────────────────────────────────────
+async function generateQuestions() {
+  const topic = document.getElementById('gen-topic').value.trim();
+  if (!topic) { showToast('⚠️ Please enter a topic first'); return; }
+
+  const subject = document.getElementById('gen-subject').value;
+  const subtopic = document.getElementById('gen-subtopic').value.trim();
+  const level = document.getElementById('gen-level').value;
+  const type = document.getElementById('gen-type').value;
+  const count = document.getElementById('gen-count').value;
+  const notes = document.getElementById('gen-notes').value.trim();
+
+  const btn = document.getElementById('gen-btn');
+  const status = document.getElementById('gen-status');
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating…';
+  status.textContent = 'Calling AI — this takes 10–20 seconds…';
+
+  const output = document.getElementById('gen-output');
+  const content = document.getElementById('gen-questions-content');
+  output.style.display = 'block';
+  content.innerHTML = `<div style="display:flex;align-items:center;gap:10px;color:var(--text-faint);padding:20px 0"><div class="spinner"></div> Generating ${count} ${type} questions on ${topic}…</div>`;
+
+  // Build prompt
+  let prompt = '';
+  if (notes || uploadedFileBase64) {
+    prompt = `You are an expert Nigerian medical school examiner generating exam questions for ${level} students.
+
+${uploadedFileBase64 ? 'The student has uploaded their study material (PDF). Generate questions STRICTLY based on the content in this document.' : ''}
+${notes ? `The student has provided the following study notes:\n\n${notes}\n\nGenerate questions STRICTLY based on this content.` : ''}
+
+Topic: ${topic}${subject ? ` (${subject})` : ''}${subtopic ? ` — ${subtopic}` : ''}
+Question type: ${type}
+Number of questions: ${count}
+Level: ${level}
+
+Generate exactly ${count} exam-style ${type} questions based on the provided material. Format clearly with question numbers. For MCQs include 4 options (A-D) and indicate the correct answer with a brief explanation. For SAQs and Essays include a model answer outline. Make questions challenging but fair for ${level} level.`;
+  } else {
+    prompt = `You are an expert Nigerian medical school examiner generating exam questions for ${level} students.
+
+Topic: ${topic}${subject ? ` (${subject})` : ''}${subtopic ? ` — ${subtopic}` : ''}
+Question type: ${type}
+Number of questions: ${count}
+Level: ${level}
+
+Generate exactly ${count} exam-style ${type} questions on this topic. Format clearly with question numbers. For MCQs include 4 options (A-D) and indicate the correct answer with a brief explanation. For SAQs and Essays include a model answer outline. For Clinical Vignette MCQs, write realistic clinical scenarios as they would appear in Nigerian MBBS finals. Make questions challenging but fair for ${level} level. Focus on commonly tested exam angles and high-yield facts.`;
+  }
+
+  // Build messages with optional PDF
+  const userContent = uploadedFileBase64
+    ? [
+        { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: uploadedFileBase64 } },
+        { type: 'text', text: prompt }
+      ]
+    : prompt;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: userContent }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.content?.map(b => b.text || '').join('') || '';
+
+    if (!text) throw new Error('No response received');
+
+    // Format output nicely
+    const formatted = text
+      .replace(/^(#{1,3} .+)$/gm, '<div style="font-weight:700;font-size:15px;margin:18px 0 8px;color:var(--blue)">$1</div>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/^(\d+\..+)$/gm, '<div style="margin:14px 0 6px;font-weight:600;color:var(--text)">$1</div>')
+      .replace(/^([A-D]\..+)$/gm, '<div style="padding:3px 0 3px 14px;color:var(--text-light)">$1</div>')
+      .replace(/^(✅.+|Correct Answer:.+|Answer:.+|Model Answer.*)$/gm, '<div style="color:var(--green);font-weight:500;margin:6px 0 4px;padding:6px 10px;background:var(--green-dim);border-radius:6px">$1</div>')
+      .replace(/\n\n/g, '<br><br>')
+      .replace(/\n/g, '<br>');
+
+    content.innerHTML = formatted || text;
+    status.textContent = `✅ ${count} questions generated`;
+
+  } catch (err) {
+    content.innerHTML = `<div style="color:var(--red);padding:16px;background:var(--red-dim);border-radius:8px">❌ Could not generate questions. Check your internet connection and try again.<br><br><small>${err.message}</small></div>`;
+    status.textContent = 'Error — please try again';
+  }
+
+  btn.disabled = false;
+  btn.textContent = '🤖 Generate Questions';
+}
+
+function copyQuestions() {
+  const content = document.getElementById('gen-questions-content').innerText;
+  navigator.clipboard.writeText(content).then(() => showToast('📋 Questions copied to clipboard'));
+}
+
+function clearGenerator() {
+  document.getElementById('gen-topic').value = '';
+  document.getElementById('gen-subtopic').value = '';
+  document.getElementById('gen-notes').value = '';
+  document.getElementById('gen-subject').value = '';
+  document.getElementById('gen-output').style.display = 'none';
+  document.getElementById('gen-status').textContent = '';
+  clearFile();
+}
 
 // ─── THEME SWITCHER ───────────────────────────────────────────────────────────
 const themeConfig = {
